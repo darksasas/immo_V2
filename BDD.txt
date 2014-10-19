@@ -1,0 +1,133 @@
+
+OBJET
+	- WebApp qui permet de:
+		- Mettre à jour ces fichiers d'emailing
+		- Noter et gérer ses infos gardiens (code immeuble, info vente, ...)
+		- Imprimer uniquement les immeubles accessibles, dans un certain ordre et seulement pour les habitants qui ne sont pas "No-pub"
+
+	- Mode off-line qui permet de:
+		- consulter toutes les data sur une rue, sans connexion
+		- stocker les modifs et les synchroniser avec le serveur, à la fin de la prospection
+
+
+
+
+
+
+
+
+BDD
+
+	table "streets"
+		str_id 	: 	[int] identifiant
+		str_t 	:	[int] type (rue, bd, impasse, etc..) 
+		str_n	:	[string] nom (StJacques, Coetlogon, etc...)
+		str_cp	: 	[int] Code Postal
+
+	table immeubles
+		im_id	:	[int] identifiant
+		str_id	:	[int] identifiant de la rue
+		im_nbr	:	[string] numéro de l'immeuble dans la rue (ex: 1, 3, 5-7, 15bis)
+
+	table immeubles_$UserID
+		im_id	:	[int] identifiant immeuble
+		gardien	:	[string] nom du gardien
+		code	:	[string] code pour entrer
+		BAL		:	[int] 0 ou 1 pour indiquer la possibilité de distribuer le courrier
+		notes	:	[string] notes d'infos à propos de l'immeuble ou du gardien.
+
+	table habitants_$userID
+		hab_id	:	[int] identifiant
+		im_id	:	[int] identifiant de l'immeuble
+		type	:	[int] type d'habitants (M., Mme, Famille, etc...)
+		nom		:	[string] nom de famille de l'habitant
+		prenom	:	[string] prénom de l'habitant
+		poids	:	[int] indique sa place dans les BAL
+		no_pub	:	[int] 0 ou 1, si 1 = ne pas faire de courrier
+
+	table $userID
+		userID 	:	[int] identifiant
+		streets	:	[string] liste des str_id autorisés
+		sync_time:	[int] timestamp du dernier enregistrement sur le serveur
+
+	table tuyeaux
+		tid		:	[int] identifiant
+		userID 	:	[int] identifiant user propriétaire de l'info
+		im_id	:	[int] identifiant de l'immeuble sur lequel porte le tuyeau
+		crea	:	[int] timestamp de creation
+		reminder:	[int] timestamp de reminder
+		notes	:	[string] info (tuyeau)
+		state	:	[int] 0: en cours, 1: succes, 3: abandon
+
+
+NAVIGATOR STORAGE
+
+	var streets = {
+		$str_id:{
+			1:"$str_t",
+			2:"$str_n",
+			3:"$str_cp"
+		},
+		19:{
+			1: 2, // 2 = boulevard
+			2:"Raspail",
+			3:75006
+		},
+	};
+
+	var immeubles = {
+		$im_id:{
+			1:$str_id,
+			2:$im_nbr,
+			3:"$gardien",
+			4:"$code",
+			5:$BAL,
+			6:$notes
+		},
+		10:{
+			1:2,
+			2:42,
+			3:"Karylle",
+			5:"1925",
+			5:1,
+			6:"rien en vue, immeuble de famille"
+		},
+	};
+
+	var habitants = {
+		$hab_id:{
+			1:$im_id,
+			2:$type,
+			3:"$nom",
+			4:"$prenom",
+			5:$poids,
+			6:$no-pub
+		},
+		421:{
+			1:10,
+			2:1,
+			3:"DELACOUR",
+			4:"Stanislas",
+			5:10,
+			6:1
+		}
+	};
+
+	var tuyeaux = {
+		$tid:{
+			1:$im_id,
+			2:$crea,
+			3:$reminder,
+			4:$notes,
+			5:$state
+		},
+		5:{
+			1:10,
+			2:0000000,
+			3:1111111,
+			4:"Deux jumelles, Mme DELACOUR et Mme MALYE, agées de 89ans",
+			5:0
+		}
+	}
+
+	var changes = {}
