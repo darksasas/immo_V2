@@ -1,0 +1,161 @@
+<?php
+global $user;
+
+/*
+To DO :
+- Pouvoir utiliser un schema qui soit fonction du userID
+*/
+
+function immomemo_schema(){
+
+	/*$schema['yoyo_kk'] = array(
+	  'description' => 'TODO: please describe this table!',
+	  'fields' => array(
+	    'kkid' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'serial',
+	      'not null' => TRUE,
+	    ),
+	    'tid' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'int',
+	      'not null' => TRUE,
+	    ),
+	    'uid' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'int',
+	      'not null' => TRUE,
+	    ),
+	    'points' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'int',
+	      'not null' => TRUE,
+	    ),
+	    'datetime' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'int',
+	      'not null' => TRUE,
+	    ),
+	  ),
+	  'primary key' => array('kkid'),
+	);
+
+	$schema['yoyo_trends'] = array(
+	  'description' => 'TODO: please describe this table!',
+	  'fields' => array(
+	    'tid' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'serial',
+	      'not null' => TRUE,
+	    ),
+	    'cat_id' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'int',
+	      'not null' => TRUE,
+	    ),
+	    'name' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'varchar',
+	      'length' => '100',
+	      'not null' => TRUE,
+	    ),
+	    'cot' => array(
+	      'description' => 'cotation',
+	      'type' => 'int',
+	      'not null' => TRUE,
+	    ),
+	    'var_week' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'int',
+	      'not null' => FALSE,
+	    ),
+	    'var_month' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'int',
+	      'not null' => FALSE,
+	    ),
+	    'var_year' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'int',
+	      'not null' => FALSE,
+	    ),
+	  ),
+	  'primary key' => array('tid'),
+	  'unique keys' => array(
+	    'name' => array('name')
+	  ),
+	);
+
+	$schema['yoyo_trends_cats'] = array(
+	  'description' => 'TODO: please describe this table!',
+	  'fields' => array(
+	    'cat_id' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'serial',
+	      'not null' => TRUE,
+	    ),
+	    'parent_cat' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'int',
+	      'not null' => FALSE,
+	      'default' => 0,
+	    ),
+	    'name' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'varchar',
+	      'length' => '50',
+	      'not null' => TRUE,
+	    ),
+	  ),
+	  'primary key' => array('cat_id'),
+	);
+
+	$schema['yoyo_wallet'] = array(
+	  'description' => 'TODO: please describe this table!',
+	  'fields' => array(
+	    'uid' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'int',
+	      'not null' => TRUE,
+	    ),
+	    'tid' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'int',
+	      'not null' => TRUE,
+	    ),
+	    'enter' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'int',
+	      'not null' => TRUE,
+	    ),
+	    'in_datetime' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'int',
+	      'not null' => TRUE,
+	    ),
+	    'exit' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'int',
+	      'not null' => FALSE,
+	    ),
+	    'out_datetime' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'int',
+	      'not null' => FALSE,
+	    ),
+	    'sens' => array(
+	      'description' => '0= Achat  1=VAD',
+	      'type' => 'int',
+	      'not null' => TRUE,
+	      'default' => 0,
+	    ),
+	  ),
+	  'unique keys' => array(
+	    'uid' => array('uid')
+	  ),
+	);
+
+
+
+	return $schema;*/
+}

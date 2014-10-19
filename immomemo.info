@@ -1,0 +1,3 @@
+name = Immomemo
+description = Provides all the needed code to Immomemo's tools
+core = 7.x
