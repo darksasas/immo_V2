@@ -1,5 +1,5 @@
 # Ignorer les fichier CSV du dossier User_CSV
-/CSV_users/*.csv
+CSV_users/*.csv
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
