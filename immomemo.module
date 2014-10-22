@@ -3,15 +3,21 @@
 
 
 function immomemo_menu() {
-    $items['test'] = array(
+    $items['immomemo/test'] = array(
     	'page callback' => 'test',
   		'type' => MENU_CALLBACK,
   		'access callback' => 'immomemo_user_access',
     );
-    $items['play'] = array(
+    $items['immomemo/play'] = array(
     	'page callback' => 'play',
   		'type' => MENU_CALLBACK,
   		//'access callback' => 'immomemo_user_access',
+  		'access callback' => true,
+    );
+    $items['immomemo/upload'] = array(
+    	'page callback' => 'upload',
+  		'type' => MENU_CALLBACK,
+  		'access callback' => 'immomemo_user_access',
   		'access callback' => true,
     );
     
@@ -26,10 +32,49 @@ function immomemo_menu() {
 
 function immomemo_user_access(){
 	global $user;
-	
+	return true;
+
 	if($user->uid !== 0)
 		return true;
 	return false;
+}
+
+/**
+
+Themes
+*/
+
+function immomemo_theme($existing, $type, $theme, $path) {
+	return array(
+		'immomemo_home' => array(
+			'template' => 'immomemo_templates/home',
+			'arguments' => array(
+				'CP' => array(),
+				//'wallet' => array(),
+			),
+		),
+		'immomemo_mobile' => array(
+			'template' => 'immomemo_templates/mobilejquery',
+			'arguments' => array(
+				'CP' => array(),
+				//'wallet' => array(),
+			),
+		),
+		'immomemo_login' => array(
+			'template' => 'immomemo_templates/login',
+			'arguments' => array(
+				//'CP' => array(),
+				//'wallet' => array(),
+			),
+		),
+		'immomemo_upload' => array(
+			'template' => 'immomemo_templates/upload',
+			'arguments' => array(
+				//'display' => array(),
+				//'wallet' => array(),
+			),
+		),
+	);
 }
 
 /**
@@ -71,37 +116,106 @@ function play(){
 	}
 }
 
+function upload(){
+	global $user;
 
-/**
+	if($user->uid != 1){ // Not admin
+		return MENU_ACCESS_DENIED ;
+	}
+	
+	$table_building_name = 'immo_buildings_'.$user->uid;
+	$table_habitant_name = 'immo_habitants_'.$user->uid;
 
-Themes
-*/
+	if (!isset($_POST['filename'])) { // 1er appel de la fonction
+		return theme('immomemo_upload');
+	}
 
-function immomemo_theme($existing, $type, $theme, $path) {
-	return array(
-		'immomemo_home' => array(
-			'template' => 'immomemo_templates/home',
-			'arguments' => array(
-				'CP' => array(),
-				//'wallet' => array(),
-			),
-		),
-		'immomemo_mobile' => array(
-			'template' => 'immomemo_templates/mobilejquery',
-			'arguments' => array(
-				'CP' => array(),
-				//'wallet' => array(),
-			),
-		),
-		'immomemo_login' => array(
-			'template' => 'immomemo_templates/login',
-			'arguments' => array(
-				//'CP' => array(),
-				//'wallet' => array(),
-			),
-		),
+	if (empty($_POST['filename'])) {
+		drupal_set_message('No filename !', 'error');
+		return theme('immomemo_upload');
+	}
+
+	if (!is_numeric($_POST['user_id']) || $_POST['user_id'] == '0') {
+		drupal_set_message('User uid must be an integer not null !', 'error');
+		return theme('immomemo_upload');
+	}
+
+
+	$filename_path = 'sites/all/modules/immomemo/CSV_users/'.$_POST['filename'].'.csv';
+
+	$im_id = '';
+	$street_num = '0';
+	$street_num2 = '';
+	$result = "";
+	$separator = ",";
+	$poids = 0 ;
+	//$row = 1;
+	$genre = array(
+		'0'=>'',
+		'1'=>'M.& Mme',
+		'2'=>'M.',
+		'3'=>'Mme',
+		'4'=>'Famille',
+		'5'=>'Sté',
+		'6'=>'SCI',
+		'7'=>'Dr.',
+		'8'=>'Me',
 	);
+	$type_voie = array(
+		'0'=> '',
+		'1'=>'rue',
+		'2'=>'boulevard',
+		'3'=>'place',
+		'4'=>'impasse',
+		'5'=>'quai',
+	);
+
+    if (($handle = fopen($filename_path, "r")) !== FALSE) {
+        while (($data = fgetcsv($handle, 0, ";")) !== FALSE) {
+
+        	if ($data[1] == 'Nom' || empty($data[1])) { // Ignore la 1ère ligne si nécessaire et les lignes vides qui séparent les immeubles
+        		continue;
+        	}
+
+        	$street_num_temp = $data[3];
+        	$street_num2_temp = $data[4];
+        	if (($street_num != $street_num_temp) || ($street_num2 != $street_num2_temp)) { //Est-on passé à un autre immeuble ? (oui, on récupère l'im_id)
+        		$query = db_query("SELECT im_id FROM {$table_building_name} WHERE nom='".$data[6]."' AND num=".intval($data[3])." AND num2='".utf8_encode($data[4])."'");
+        		$im_id = $query->fetchField();
+        		$street_num = $street_num_temp ;	
+        		$street_num2 = $street_num2_temp ;
+
+        		if (!$im_id) { // l'immeuble n'existe pas encore, il faut le créer				
+					db_insert($table_building_name)
+						->fields(array('num', 'num2', 'type_voie', 'nom', 'cp', 'bal','gardiens', 'tel_gardiens', 'code', 'infos'))
+						->values(array('num'=>$data[3], 'num2'=>empty($data[4])?'':utf8_encode($data[4]),'type_voie'=> ($voie=array_search($data[5], $type_voie))?intval($voie):0,'nom'=>utf8_encode($data[6]), 'cp'=>$data[7], 'bal'=>($data[9]=='X')?1:0 , 'gardiens'=>empty($data[10])?'':utf8_encode($data[10]), 'tel_gardiens'=>empty($data[11])?'':utf8_encode($data[11]), 'code'=>empty($data[12])?'':utf8_encode($data[12]),'infos'=>utf8_encode($data[13])))
+						->execute();
+					$im_id = Database::getConnection()->lastInsertId();
+					//var_dump($im_id);
+        		}
+        		$poids = 0 ; // On remet le poids des habitants à zero pour le nouvel immeuble
+        	}
+            
+        	// On enregistre les habitants
+        	db_insert($table_habitant_name)
+        		->fields(array('im_id', 'genre', 'nom', 'prenom', 'poids'))
+				->values(array('im_id'=>$im_id, 'genre'=>'1','nom'=>utf8_encode($data[1]), 'prenom'=>utf8_encode($data[2]), 'poids'=>intval($poids)))
+				->execute();
+
+            $poids++ ;
+        }
+        fclose($handle);
+    }
+    else{
+    	drupal_set_message("The file \"".$_POST['filename']."\" was not found on this server !", 'error');
+		return theme('immomemo_upload');
+
+    }
+    drupal_set_message('Finished !<br>The file has been uploaded in database.');
+    return theme('immomemo_upload');
 }
+
+
 
 /**
 
