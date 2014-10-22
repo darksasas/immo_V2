@@ -1,3 +1,6 @@
+# fichier qui n'ont pas besoin d'être uploadés
+/CSV_users
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
