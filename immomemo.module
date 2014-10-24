@@ -123,8 +123,8 @@ function upload(){
 		return MENU_ACCESS_DENIED ;
 	}
 	
-	$table_building_name = 'immo_buildings_'.$user->uid;
-	$table_habitant_name = 'immo_habitants_'.$user->uid;
+	$table_building_user = 'immo_buildings_'.$user->uid;
+	$table_habitant_user = 'immo_habitants_'.$user->uid;
 
 	if (!isset($_POST['filename'])) { // 1er appel de la fonction
 		return theme('immomemo_upload');
@@ -143,7 +143,9 @@ function upload(){
 
 	$filename_path = 'sites/all/modules/immomemo/CSV_users/'.$_POST['filename'].'.csv';
 
+	$str_id = '';
 	$im_id = '';
+	$street_name = '';
 	$street_num = '0';
 	$street_num2 = '';
 	$result = "";
@@ -177,24 +179,53 @@ function upload(){
         		continue;
         	}
 
+        	// On recupère le str_id ou le créé si besoin
+        	$street_name_temp = $datat[6];
+        	if ($street_name_temp != $street_name) {
+        		$query = db_query("SELECT str_id FROM {immo_streets} WHERE str_n='".$data[6]."'");
+	        	$str_id = $query->fetchField();
+	        	$street_name = $street_name_temp ;
+	        	if (!$str_id) {
+	        		db_insert('immo_streets')
+						->fields(array('str_t', 'str_n', 'str_cp'))
+						->values(array('str_t'=>($voie=array_search($data[5], $type_voie))?intval($voie):0, 'str_n'=>utf8_encode($data[6]), 'str_cp'=>intval($data[7])));
+						->execute();
+					$str_id = Database::getConnection()->lastInsertId();
+	        	}
+        	}
+
+        	// On récupère le im_id ou le créé si besoin
         	$street_num_temp = $data[3];
         	$street_num2_temp = $data[4];
         	if (($street_num != $street_num_temp) || ($street_num2 != $street_num2_temp)) { //Est-on passé à un autre immeuble ? (oui, on récupère l'im_id)
-        		$query = db_query("SELECT im_id FROM {$table_building_name} WHERE nom='".$data[6]."' AND num=".intval($data[3])." AND num2='".utf8_encode($data[4])."'");
+        		$query = db_query("SELECT im_id FROM {immo_buildings} WHERE str_id='".$str_id."' AND str_nbr=".utf8_encode($data[3])." AND str_nbr2='".utf8_encode($data[4])."'");
         		$im_id = $query->fetchField();
+    	
         		$street_num = $street_num_temp ;	
         		$street_num2 = $street_num2_temp ;
 
-        		if (!$im_id) { // l'immeuble n'existe pas encore, il faut le créer				
-					db_insert($table_building_name)
-						->fields(array('num', 'num2', 'type_voie', 'nom', 'cp', 'bal','gardiens', 'tel_gardiens', 'code', 'infos'))
-						->values(array('num'=>$data[3], 'num2'=>empty($data[4])?'':utf8_encode($data[4]),'type_voie'=> ($voie=array_search($data[5], $type_voie))?intval($voie):0,'nom'=>utf8_encode($data[6]), 'cp'=>$data[7], 'bal'=>($data[9]=='X')?1:0 , 'gardiens'=>empty($data[10])?'':utf8_encode($data[10]), 'tel_gardiens'=>empty($data[11])?'':utf8_encode($data[11]), 'code'=>empty($data[12])?'':utf8_encode($data[12]),'infos'=>utf8_encode($data[13])))
+        		if (!$im_id) { // l'immeuble n'existe pas encore, il faut le créer dans la table générale et celle du user		
+					db_insert('immo_buildings')
+						->fields(array('str_id', 'str_nbr', 'str_nbr2'))
+						->values(array('str_id'=>$str_id, 'str_nbr'=>utf8_encode($data[3]) ,'str_nbr2'=>empty($data[4])?'':utf8_encode($data[4])))
 						->execute();
 					$im_id = Database::getConnection()->lastInsertId();
-					//var_dump($im_id);
+
+					db_insert($table_building_user)
+						->fields(array('im_id', 'gardien', 'code', 'BAL', 'notes'))
+						->values(array('im_id'=>$im_id , 'gardien'=>utf8_encode($data[10]), 'code'=>utf8_encode($data[12]) ,'BAL'=>empty($data[9])?0:intval($data[9]), 'notes'=>utf8_encode($data[13])))
+						->execute();
         		}
         		$poids = 0 ; // On remet le poids des habitants à zero pour le nouvel immeuble
         	}
+
+
+
+
+
+
+
+        	
             
         	// On enregistre les habitants
         	db_insert($table_habitant_name)

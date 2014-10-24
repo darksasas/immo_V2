@@ -28,6 +28,7 @@ BDD
 		im_id	:	[int] identifiant
 		str_id	:	[int] identifiant de la rue
 		im_nbr	:	[string] numéro de l'immeuble dans la rue (ex: 1, 3, 5-7, 15bis)
+		im_nbr2	:	[string] complément du numéro de l'immeuble (ex: 1, 3, 5-7, 15bis)
 
 	table buildings_$UserID
 		im_id	:	[int] identifiant immeuble
