@@ -9,6 +9,11 @@ OBJET
 		- consulter toutes les data sur une rue, sans connexion
 		- stocker les modifs et les synchroniser avec le serveur, à la fin de la prospection
 
+	- Mode Admin qui permet de:
+		- attribuer des rues à des users
+		- Pouvoir transférer des rues et des tyeaux à un autre user
+		- de voir toutes les datas
+
 
 
 

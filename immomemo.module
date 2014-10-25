@@ -123,9 +123,6 @@ function upload(){
 		return MENU_ACCESS_DENIED ;
 	}
 	
-	$table_building_user = 'immo_buildings_'.$user->uid;
-	$table_habitant_user = 'immo_habitants_'.$user->uid;
-
 	if (!isset($_POST['filename'])) { // 1er appel de la fonction
 		return theme('immomemo_upload');
 	}
@@ -140,14 +137,18 @@ function upload(){
 		return theme('immomemo_upload');
 	}
 
+	$table_building_user = 'immo_buildings_'.$_POST['user_id'];
+	$table_habitant_user = 'immo_habitants_'.$_POST['user_id'];
+
 
 	$filename_path = 'sites/all/modules/immomemo/CSV_users/'.$_POST['filename'].'.csv';
 
 	$str_id = '';
 	$im_id = '';
 	$street_name = '';
-	$street_num = '0';
-	$street_num2 = '';
+	$street_cp = '';
+	$im_num = '0';
+	$im_num2 = '';
 	$result = "";
 	$separator = ",";
 	$poids = 0 ;
@@ -180,7 +181,8 @@ function upload(){
         	}
 
         	// On recupère le str_id ou le créé si besoin
-        	$street_name_temp = $datat[6];
+        	$street_name_temp = $data[6];
+        	$street_cp_temp = $data[7];
         	if ($street_name_temp != $street_name) {
         		$query = db_query("SELECT str_id FROM {immo_streets} WHERE str_n='".$data[6]."'");
 	        	$str_id = $query->fetchField();
@@ -188,26 +190,26 @@ function upload(){
 	        	if (!$str_id) {
 	        		db_insert('immo_streets')
 						->fields(array('str_t', 'str_n', 'str_cp'))
-						->values(array('str_t'=>($voie=array_search($data[5], $type_voie))?intval($voie):0, 'str_n'=>utf8_encode($data[6]), 'str_cp'=>intval($data[7])));
+						->values(array('str_t'=>($voie=array_search($data[5], $type_voie))?intval($voie):0, 'str_n'=>utf8_encode($data[6]), 'str_cp'=>intval($data[7])))
 						->execute();
 					$str_id = Database::getConnection()->lastInsertId();
 	        	}
         	}
 
         	// On récupère le im_id ou le créé si besoin
-        	$street_num_temp = $data[3];
-        	$street_num2_temp = $data[4];
-        	if (($street_num != $street_num_temp) || ($street_num2 != $street_num2_temp)) { //Est-on passé à un autre immeuble ? (oui, on récupère l'im_id)
-        		$query = db_query("SELECT im_id FROM {immo_buildings} WHERE str_id='".$str_id."' AND str_nbr=".utf8_encode($data[3])." AND str_nbr2='".utf8_encode($data[4])."'");
+        	$im_num_temp = $data[3];
+        	$im_num2_temp = $data[4];
+        	if (($im_num != $im_num_temp) || ($im_num2 != $im_num2_temp)) { //Est-on passé à un autre immeuble ? (oui, on récupère l'im_id)
+        		$query = db_query("SELECT im_id FROM {immo_buildings} WHERE str_id='".$str_id."' AND im_nbr=".utf8_encode($data[3])." AND im_nbr2='".utf8_encode($data[4])."'");
         		$im_id = $query->fetchField();
     	
-        		$street_num = $street_num_temp ;	
-        		$street_num2 = $street_num2_temp ;
+        		$im_num = $im_num_temp ;	
+        		$im_num2 = $im_num2_temp ;
 
         		if (!$im_id) { // l'immeuble n'existe pas encore, il faut le créer dans la table générale et celle du user		
 					db_insert('immo_buildings')
-						->fields(array('str_id', 'str_nbr', 'str_nbr2'))
-						->values(array('str_id'=>$str_id, 'str_nbr'=>utf8_encode($data[3]) ,'str_nbr2'=>empty($data[4])?'':utf8_encode($data[4])))
+						->fields(array('str_id', 'im_nbr', 'im_nbr2'))
+						->values(array('str_id'=>$str_id, 'im_nbr'=>utf8_encode($data[3]) ,'im_nbr2'=>empty($data[4])?'':utf8_encode($data[4])))
 						->execute();
 					$im_id = Database::getConnection()->lastInsertId();
 
@@ -217,20 +219,12 @@ function upload(){
 						->execute();
         		}
         		$poids = 0 ; // On remet le poids des habitants à zero pour le nouvel immeuble
-        	}
-
-
-
-
-
-
-
-        	
+        	}     	
             
         	// On enregistre les habitants
-        	db_insert($table_habitant_name)
-        		->fields(array('im_id', 'genre', 'nom', 'prenom', 'poids'))
-				->values(array('im_id'=>$im_id, 'genre'=>'1','nom'=>utf8_encode($data[1]), 'prenom'=>utf8_encode($data[2]), 'poids'=>intval($poids)))
+        	db_insert($table_habitant_user)
+        		->fields(array('im_id', 'type', 'nom', 'prenom', 'poids', 'no_pub'))
+				->values(array('im_id'=>$im_id, 'type'=>intval($data[0]),'nom'=>utf8_encode($data[1]), 'prenom'=>utf8_encode($data[2]), 'poids'=>intval($poids), 'no_pub'=>0))
 				->execute();
 
             $poids++ ;
