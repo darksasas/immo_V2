@@ -46,17 +46,17 @@ Themes
 
 function immomemo_theme($existing, $type, $theme, $path) {
 	return array(
-		'immomemo_home' => array(
+		/*'immomemo_home' => array(
 			'template' => 'immomemo_templates/home',
 			'arguments' => array(
 				'CP' => array(),
 				//'wallet' => array(),
 			),
-		),
+		),*/
 		'immomemo_mobile' => array(
-			'template' => 'immomemo_templates/mobilejquery',
+			'template' => 'immomemo_templates/play',
 			'arguments' => array(
-				'CP' => array(),
+				'user_datas' => array(),
 				//'wallet' => array(),
 			),
 		),
@@ -102,17 +102,19 @@ function play(){
 		return theme('immomemo_login');
 	}
 	
-	$CP = get_CP();
+	$user_datas = get_datas($user->uid);
+
+
 	require_once 'PHP/Mobile_Detect.php';
 	$detect = new Mobile_Detect;
 
 
 	if( $detect->isMobile() || $detect->isTablet()) {
- 		echo theme('immomemo_mobile', array('CP'=>$CP));
+ 		echo theme('immomemo_mobile', array('user_datas'=>$user_datas));
 	}
 	else{
 		//echo theme('immomemo_home', array('CP'=>$CP));  // PC ??
-		echo theme('immomemo_mobile', array('CP'=>$CP)); // mobile
+		echo theme('immomemo_mobile', array('user_datas'=>$user_datas)); // mobile
 	}
 }
 
@@ -247,3 +249,53 @@ function upload(){
 Fonctions diverses
 */
 
+function get_datas($user_id){
+
+	$user_table_immeubles = 'immo_buildings_'.$user_id;
+	$user_table_habitants = 'immo_habitants_'.$user_id;
+
+
+	// Get user's streets
+	$query = db_query("SELECT streets FROM {immo_users} WHERE user_id='".$user_id."'");
+	$str_ids = unserialize($query->fetchField());
+
+	foreach ($str_ids as $key => $value) {
+		// Get streets data
+		$query = db_query("SELECT * FROM {immo_streets} WHERE str_id='".$value."'");
+		$result = $query->fetchAssoc() ;
+		$user_datas['streets'][$value] = array(
+			0=>$result['str_t'], 
+			1=>$result['str_n'], 
+			2=>$result['str_cp']
+		);
+
+		// Get immeubles data
+		$query = db_query("SELECT * FROM {immo_buildings} a JOIN {$user_table_immeubles} b ON b.im_id = a.im_id WHERE a.str_id='".$value."'");
+		while ($result = $query->fetchAssoc()) {
+			$user_datas['immeubles'][$result['im_id']] = array(
+				0=>$result['str_id'],
+				1=>$result['im_nbr'],
+				2=>$result['gardien'],
+				3=>$result['code'],
+				4=>$result['BAL'],
+				5=>$result['notes']
+			);
+			// Get habitants data
+			$query2 = db_query("SELECT * FROM {$user_table_habitants} WHERE im_id='".$result['im_id']."'");
+			while ($result2 = $query2->fetchAssoc()) {
+				$user_datas['habitants'][$result2['hab_id']] = array(
+					0=>$result2['im_id'],
+					1=>$result2['type'],
+					2=>$result2['nom'],
+					3=>$result2['prenom'],
+					4=>$result2['poids'],
+					5=>$result2['no_pub']
+				);
+			}
+		}
+	}
+
+	//print_r($user_datas);
+	//echo json_encode($user_datas);
+	return $user_datas;
+}

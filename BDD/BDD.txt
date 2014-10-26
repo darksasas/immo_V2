@@ -51,7 +51,7 @@ BDD
 		poids	:	[int] indique sa place dans les BAL
 		no_pub	:	[int] 0 ou 1, si 1 = ne pas faire de courrier
 
-	table $userID
+	table immo_users
 		userID 	:	[int] identifiant
 		streets	:	[string] liste des str_id autorisés
 		sync_time:	[int] timestamp du dernier enregistrement sur le serveur
@@ -70,69 +70,69 @@ NAVIGATOR STORAGE
 
 	var streets = {
 		$str_id:{
-			1:"$str_t",
-			2:"$str_n",
-			3:"$str_cp"
+			0:"$str_t",
+			1:"$str_n",
+			2:"$str_cp"
 		},
 		19:{
-			1: 2, // 2 = boulevard
-			2:"Raspail",
-			3:75006
+			0: 2, // 2 = boulevard
+			1:"Raspail",
+			2:75006
 		},
 	};
 
 	var immeubles = {
 		$im_id:{
-			1:$str_id,
-			2:$im_nbr,
-			3:"$gardien",
-			4:"$code",
-			5:$BAL,
-			6:$notes
+			0:$str_id,
+			1:$im_nbr,
+			2:"$gardien",
+			3:"$code",
+			4:$BAL,
+			5:$notes
 		},
 		10:{
-			1:2,
-			2:42,
-			3:"Karylle",
-			5:"1925",
-			5:1,
-			6:"rien en vue, immeuble de famille"
+			0:2,
+			1:42,
+			2:"Karylle",
+			3:"1925",
+			4:1,
+			5:"rien en vue, immeuble de famille"
 		},
 	};
 
 	var habitants = {
 		$hab_id:{
-			1:$im_id,
-			2:$type,
-			3:"$nom",
-			4:"$prenom",
-			5:$poids,
-			6:$no-pub
+			0:$im_id,
+			1:$type,
+			2:"$nom",
+			3:"$prenom",
+			4:$poids,
+			5:$no-pub
 		},
 		421:{
-			1:10,
-			2:1,
-			3:"DELACOUR",
-			4:"Stanislas",
-			5:10,
-			6:1
+			0:10,
+			1:1,
+			2:"DELACOUR",
+			3:"Stanislas",
+			4:10,
+			5:1
 		}
 	};
 
 	var tuyeaux = {
 		$tid:{
-			1:$im_id,
-			2:$crea,
-			3:$reminder,
-			4:$notes,
-			5:$state
+			0:$im_id,
+			1:$crea,
+			2:$reminder,
+			3:$notes,
+			4:$state
 		},
 		5:{
-			1:10,
-			2:0000000,
-			3:1111111,
-			4:"Deux jumelles, Mme DELACOUR et Mme MALYE, agées de 89ans",
-			5:0
+			0:10,
+			1:0000000,
+			2:1111111,
+			3:"Deux jumelles, Mme DELACOUR et Mme MALYE, agées de 89ans",
+			4:0
 		}
 	}
 
