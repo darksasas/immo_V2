@@ -20,6 +20,11 @@ function immomemo_menu() {
   		'access callback' => 'immomemo_user_access',
   		'access callback' => true,
     );
+    $items['immomemo/ajax/timestamp'] = array(
+    	'page callback' => 'check_timestamp',
+  		'type' => MENU_CALLBACK,
+  		'access callback' => 'immomemo_user_access',
+    );
     
     /*$items['ajax/walletMove'] = array(
     	'page callback' => 'walletMove',
@@ -32,7 +37,7 @@ function immomemo_menu() {
 
 function immomemo_user_access(){
 	global $user;
-	return true;
+	//return true;
 
 	if($user->uid !== 0)
 		return true;
@@ -242,6 +247,26 @@ function upload(){
     return theme('immomemo_upload');
 }
 
+function check_timestamp(){
+	global $user;
+	$user_timestamp = intval($_POST['user_timestamp']);
+
+	$query = db_query("SELECT last_sync FROM {immo_users} WHERE user_id='".$user->uid."'");
+	$server_timestamp = $query->fetchField();
+
+	if ($user_timestamp > $server_timestamp) { // la webapp a des données plus fraiches que le serveur
+		echo 'SERVER_OLD';
+		return;
+	}
+	else if ($user_timestamp < $server_timestamp) { // Le serveur est plus frais
+		echo json_encode(get_datas($user->uid));
+		return;
+	}
+	else if ($user_timestamp == $server_timestamp) { // Données identiques
+		echo 'NO_CHANGE';
+	}
+}
+
 
 
 /**
@@ -294,6 +319,10 @@ function get_datas($user_id){
 			}
 		}
 	}
+
+	// Get user's timestamp
+	$query = db_query("SELECT last_sync FROM {immo_users} WHERE user_id='".$user_id."'");
+	$user_datas['user_timestamp'] = $query->fetchField();
 
 	//print_r($user_datas);
 	//echo json_encode($user_datas);
