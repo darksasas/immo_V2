@@ -300,10 +300,11 @@ function get_datas($user_id){
 			$user_datas['immeubles'][$result['im_id']] = array(
 				0=>$result['str_id'],
 				1=>$result['im_nbr'],
-				2=>$result['gardien'],
-				3=>$result['code'],
-				4=>$result['BAL'],
-				5=>$result['notes']
+				2=>$result['im_nbr2'],
+				3=>$result['gardien'],
+				4=>$result['code'],
+				5=>$result['BAL'],
+				6=>$result['notes']
 			);
 			// Get habitants data
 			$query2 = db_query("SELECT * FROM {$user_table_habitants} WHERE im_id='".$result['im_id']."'");
